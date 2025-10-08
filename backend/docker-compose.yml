@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  llm-chat-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_BACKEND=hf
+      - MODEL_ID=Qwen/Qwen2-7B-Instruct
+      - ENABLE_RAG=true
+      - DEBUG=false
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  # Optional: Add a reverse proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - llm-chat-api
+    restart: unless-stopped
